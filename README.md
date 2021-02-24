@@ -33,7 +33,7 @@ rpi-source
 This library is needed when running 'make menuconfig'
 
 ```text
- *** ncurses-devel is NOT installed. Needed by 'make menuconfig'. On Raspberry Pi OS: sudo apt install ncurses-dev
+ *** ncurses-devel is NOT installed. Needed by 'make menuconfig'. On Raspberry Pi OS: sudo apt install libncurses5-dev
 ```
 
 Install prerequisites
