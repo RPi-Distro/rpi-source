@@ -305,7 +305,7 @@ Links:
 
 
 ### mcp2515a
-New implementation of the mcp251x driver with low latency/low IRQ in mind making use of asyncronous SPI
+New implementation of the mcp251x driver with low latency/low IRQ in mind making use of asynchronous SPI
 
 First install the CAN subsystem modules mentioned in the previous example.
 
