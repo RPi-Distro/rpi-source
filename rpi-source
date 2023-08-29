@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 #
 # Copyright (C) 2014 Noralf Tronnes
@@ -11,9 +11,9 @@ import os
 import struct
 import sys
 import argparse
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import gzip
 import subprocess
 import re
@@ -24,7 +24,7 @@ import errno
 # used by archive file and unpacked archive
 DISK_USAGE_MB = 900
 
-PROCESSOR_TYPES = range(0, 4)
+PROCESSOR_TYPES = list(range(0, 4))
 PROCESSOR_TYPES_NAMES = ['BCM2835', 'BCM2836', 'BCM2837', 'BCM2711']
 
 help = "https://github.com/RPi-Distro/rpi-source/blob/master/README.md"
@@ -98,7 +98,7 @@ def sh_out(cmd):
     errcode = process.returncode
     if errcode:
         return None
-    return out
+    return out.decode('ascii')
 
 def writef(f, str, mode='w'):
     debug("writef(%s)" % f)
@@ -109,25 +109,25 @@ def writef(f, str, mode='w'):
 def download(url):
     debug("download: %s" % url)
     try:
-        res = urllib2.urlopen(url).read()
-    except urllib2.HTTPError, e:
+        res = urllib.request.urlopen(url).read().decode('ascii')
+    except urllib.error.HTTPError as e:
         fail(
             "Couldn't download %s, HTTPError: %s\n\n%s"
             % (url, e.code, json.dumps(json.load(e), indent=4))
         )
-    except urllib2.URLError, e:
+    except urllib.error.URLError as e:
         fail("Couldn't download %s, URLError: %s" % (url, e.args))
     return res
 
 def download_to(url, file):
     debug("download_to: %s -> %s" % (url, file))
     if not args.dry_run:
-        urllib.urlretrieve (url, file)
+        urllib.request.urlretrieve (url, file)
 
 def update_get_head():
     if update_get_head.ref:
         return update_get_head.ref
-    repo_short = urlparse.urlparse(script_repo).path
+    repo_short = urllib.parse.urlparse(script_repo).path
     repo_api = "https://api.github.com/repos%s/git/refs/heads/master" % repo_short
     res = download(repo_api)
     try:
@@ -190,7 +190,7 @@ def check_gcc():
     errcode = process.returncode
     if errcode:
         debug("gcc version check failed: '%s' returned %d" %(cmd, errcode))
-    gcc_ver = out.strip()
+    gcc_ver = out.strip().decode('ascii')
 
     with open('/proc/version', 'r') as f:
         proc_version = f.read()
@@ -215,7 +215,7 @@ def proc_config_gz():
         return ''
 
     with gzip.open('/proc/config.gz', 'rb') as f:
-        return f.read()
+        return f.read().decode('ascii')
 
 
 def processor_type_suffix():
@@ -238,7 +238,7 @@ def rpi_update_method(uri):
         fw_rev = f.read().strip()
     info("Firmware revision: %s" % fw_rev)
 
-    repo_short = urlparse.urlparse(uri).path
+    repo_short = urllib.parse.urlparse(uri).path
 
     repo_api = "https://api.github.com/repos%s" % repo_short
     repo_raw = "https://raw.githubusercontent.com%s" % repo_short
