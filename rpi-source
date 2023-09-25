@@ -98,7 +98,7 @@ def sh_out(cmd):
     errcode = process.returncode
     if errcode:
         return None
-    return out.decode('ascii')
+    return out.decode('utf-8')
 
 def writef(f, str, mode='w'):
     debug("writef(%s)" % f)
@@ -109,7 +109,7 @@ def writef(f, str, mode='w'):
 def download(url):
     debug("download: %s" % url)
     try:
-        res = urllib.request.urlopen(url).read().decode('ascii')
+        res = urllib.request.urlopen(url).read().decode('utf-8')
     except urllib.error.HTTPError as e:
         fail(
             "Couldn't download %s, HTTPError: %s\n\n%s"
@@ -190,7 +190,7 @@ def check_gcc():
     errcode = process.returncode
     if errcode:
         debug("gcc version check failed: '%s' returned %d" %(cmd, errcode))
-    gcc_ver = out.strip().decode('ascii')
+    gcc_ver = out.strip().decode('utf-8')
 
     with open('/proc/version', 'r') as f:
         proc_version = f.read()
@@ -215,7 +215,7 @@ def proc_config_gz():
         return ''
 
     with gzip.open('/proc/config.gz', 'rb') as f:
-        return f.read().decode('ascii')
+        return f.read().decode('utf-8')
 
 
 def processor_type_suffix():
