@@ -30,6 +30,8 @@ PROCESSOR_TYPES_NAMES = ['BCM2835', 'BCM2836', 'BCM2837', 'BCM2711']
 help = "https://github.com/RPi-Distro/rpi-source/blob/master/README.md"
 script_repo = "https://github.com/RPi-Distro/rpi-source"
 
+# Bookworm moved the firmware path so we need to parameterize the location
+firmware_version_path = "/boot/.firmware_revision"
 update_tag_file = os.path.join(os.environ.get('HOME'), '.rpi-source')
 argv = sys.argv[:]
 
@@ -164,6 +166,24 @@ def update_tag():
     info("Set update tag: %s" % ref)
     writef(update_tag_file, ref)
 
+def get_rasbian_version():
+    file_path = '/etc/os-release'
+
+    raspbian_version = None
+
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            lines= file.readlines()
+
+        for line in lines:
+            if line.startswith('VERSION_ID='):
+                try:
+                    raspbian_version = int(line.split('=')[1].strip('"\n'))
+                except ValueError:
+                    raspbian_version = None
+
+    return raspbian_version
+
 def do_update():
     # MOD: replace current script; do not assume script is located at /usr/bin/rpi-source; also keep ownership and permissions
     script_name = argv[0]
@@ -234,7 +254,7 @@ def rpi_update_method(uri):
 
     info("rpi-update: %s" % uri)
 
-    with open("/boot/.firmware_revision") as f:
+    with open(firmware_version_path) as f:
         fw_rev = f.read().strip()
     info("Firmware revision: %s" % fw_rev)
 
@@ -331,6 +351,16 @@ info("SoC: %s" % PROCESSOR_TYPES_NAMES[processor_type])
 
 # FIX usage of -d DEST with relative pathnames
 args.dest = os.path.abspath(args.dest)
+rasbian_version = get_rasbian_version()
+if None != rasbian_version:
+    info("Rasbian version: %s" % rasbian_version)
+
+    # 12 is the version ID for bookworm
+    if rasbian_version == 12:
+        firmware_version_path = "/boot/firmware/.firmware_revision"
+
+else:
+    info("Unable to determine Rasbian version")
 
 if args.tag_update:
     update_tag()
@@ -348,7 +378,7 @@ if not args.skip_gcc:
 check_bc()
 
 debianlog = "/usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz"
-if os.path.exists("/boot/.firmware_revision"):
+if os.path.exists(firmware_version_path):
     kernel = rpi_update_method(args.uri)
 elif os.path.exists(debianlog):
     kernel = debian_method(debianlog)
