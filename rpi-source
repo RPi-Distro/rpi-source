@@ -234,7 +234,7 @@ def rpi_update_method(uri):
 
     info("rpi-update: %s" % uri)
 
-    with open("/boot/.firmware_revision") as f:
+    with open(firmware_revision_path) as f:
         fw_rev = f.read().strip()
     info("Firmware revision: %s" % fw_rev)
 
@@ -332,6 +332,12 @@ info("SoC: %s" % PROCESSOR_TYPES_NAMES[processor_type])
 # FIX usage of -d DEST with relative pathnames
 args.dest = os.path.abspath(args.dest)
 
+if os.path.exists('/boot/firmware/.firmware_revision'):
+    firmware_revision_path = '/boot/firmware/.firmware_revision'
+else:
+    firmware_revision_path = '/boot/.firmware_revision'
+
+
 if args.tag_update:
     update_tag()
     exit(0)
@@ -348,7 +354,7 @@ if not args.skip_gcc:
 check_bc()
 
 debianlog = "/usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz"
-if os.path.exists("/boot/.firmware_revision"):
+if os.path.exists(firmware_revision_path):
     kernel = rpi_update_method(args.uri)
 elif os.path.exists(debianlog):
     kernel = debian_method(debianlog)
