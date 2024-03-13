@@ -1,5 +1,5 @@
 There is a kernel-headers Raspberry Pi OS package now:
-https://www.raspberrypi.org/documentation/linux/kernel/headers.md
+https://www.raspberrypi.com/documentation/computers/linux_kernel.html#kernel-headers
 
 rpi-source is helpful if you use rpi-update kernels or want to build an in-kernel module.
 
