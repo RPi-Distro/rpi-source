@@ -444,7 +444,7 @@ if args.default_config or not kernel.config:
         if architecture_type == 0:
             sh("cd %s && make bcm2709_defconfig" % (linux_symlink,))
         elif architecture_type == 1:
-            sh("cd %s && make bcmrpi3_defconfig" % (linux_symlink,))
+            sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
     elif processor_type == 3:
         sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
     else:
