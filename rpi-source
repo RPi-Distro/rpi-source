@@ -451,24 +451,27 @@ sh("sudo ln -sf %s /lib/modules/$(uname -r)/source" % linux_symlink)
 
 if args.default_config or not kernel.config:
     info(".config (generating default)")
+    defconfig = None
     if processor_type == 0:
-        sh("cd %s && make bcmrpi_defconfig" % (linux_symlink,))
+        defconfig = "bcmrpi_defconfig"
     elif processor_type == 1:
-        sh("cd %s && make bcm2709_defconfig" % (linux_symlink,))
+        defconfig = "bcm2709_defconfig"
     elif processor_type == 2:
         if architecture_type == 0:
-            sh("cd %s && make bcm2709_defconfig" % (linux_symlink,))
+            defconfig = "bcm2709_defconfig"
         elif architecture_type == 1:
-            sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
+            defconfig = "bcm2711_defconfig"
     elif processor_type == 3:
-        sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
+        defconfig = "bcm2711_defconfig"
     elif processor_type == 4:
         if page_size == 4096:
-            sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
+            defconfig = "bcm2711_defconfig"
         elif page_size == 16384:
-            sh("cd %s && make bcm2712_defconfig" % (linux_symlink,))
+            defconfig = "bcm2712_defconfig"
+    if defconfig is not None:
+        sh("cd %s && make %s" % (linux_symlink, defconfig))
     else:
-        fail("Unsupported processor_type %d" % processor_type)
+        fail("Unsupported processor_type: %d, architecture_type: %d" % (processor_type, architecture_type))
 else:
     info(".config")
     writef(os.path.join(linux_dir, '.config'), kernel.config)
