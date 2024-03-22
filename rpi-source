@@ -24,7 +24,7 @@ import errno
 # used by archive file and unpacked archive
 DISK_USAGE_MB = 900
 
-PROCESSOR_TYPES_NAMES = ('BCM2835', 'BCM2836', 'BCM2837', 'BCM2711')
+PROCESSOR_TYPES_NAMES = ('BCM2835', 'BCM2836', 'BCM2837', 'BCM2711', 'BCM2712')
 PROCESSOR_TYPES = range(0, len(PROCESSOR_TYPES_NAMES))
 ARCHITECTURE_TYPES_NAMES = ('32-bit', '64-bit')
 ARCHITECTURE_TYPES = range(0, len(ARCHITECTURE_TYPES_NAMES))
@@ -243,6 +243,11 @@ def kernel_suffix():
             return '7l'
         elif architecture_type == 1:
             return '8'
+    elif processor_type == 4: # BCM2712 uses kernel8.img or kernel_2712.img
+        if architecture_type == 1 and page_size == 4096:
+            return '8'
+        if architecture_type == 1 and page_size == 16384:
+            return '_2712'
 
     fail("Unsupported combination of processor_type %d and architecture_type %d" % (processor_type, architecture_type))
 
@@ -347,6 +352,13 @@ def get_architecture_type():
         return 0
 
 
+def get_page_size():
+    page_size = int(sh_out("getconf PAGESIZE"))
+    if (page_size % 4096) != 0:
+        fail("Unexpected page size: %d, exiting" % (page_size))
+    return page_size
+
+
 def check_bc():
     if not os.path.exists('/usr/bin/bc'):
         fail("bc is NOT installed. Needed by 'make modules_prepare'. On Raspberry Pi OS,\nrun 'sudo apt install bc' to install it.")
@@ -358,6 +370,9 @@ info("SoC: %s" % PROCESSOR_TYPES_NAMES[processor_type])
 
 architecture_type = get_architecture_type()
 info("Arch: %s" % ARCHITECTURE_TYPES_NAMES[architecture_type])
+
+page_size = get_page_size()
+info("Page Size: %d" % page_size)
 
 # FIX usage of -d DEST with relative pathnames
 args.dest = os.path.abspath(args.dest)
@@ -447,6 +462,11 @@ if args.default_config or not kernel.config:
             sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
     elif processor_type == 3:
         sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
+    elif processor_type == 4:
+        if page_size == 4096:
+            sh("cd %s && make bcm2711_defconfig" % (linux_symlink,))
+        elif page_size == 16384:
+            sh("cd %s && make bcm2712_defconfig" % (linux_symlink,))
     else:
         fail("Unsupported processor_type %d" % processor_type)
 else:
