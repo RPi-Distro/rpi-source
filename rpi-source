@@ -282,6 +282,9 @@ def debian_method(fn):
     # Find first firmware entry in log (latest entries are at the top)
     fw_rev = re.search(r'firmware as of ([0-9a-fA-F]+)', debian_changelog.decode('utf-8'))
     if not fw_rev:
+        fw_rev = re.search(r'raspi-firmware \((?:[0-9.]+:)?([0-9.]+)', debian_changelog.decode('utf-8'))
+
+    if not fw_rev:
         fail("Could not identify latest firmware revision")
 
     fw_rev = fw_rev.group(1)
@@ -398,11 +401,14 @@ if not args.skip_gcc:
 
 check_bc()
 
-debianlog = "/usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz"
-if os.path.exists(firmware_revision_path):
-    kernel = rpi_update_method(args.uri)
-elif os.path.exists(debianlog):
+debianlog = "/usr/share/doc/raspi-firmware/changelog.Debian.gz"
+if not os.path.exists(debianlog):
+    debianlog = "/usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz"
+
+if os.path.exists(debianlog):
     kernel = debian_method(debianlog)
+elif os.path.exists(firmware_revision_path):
+    kernel = rpi_update_method(args.uri)
 else:
     fail("Can't find a source for this kernel")
 
